@@ -1,0 +1,104 @@
+#!/bin/bash
+#state="MASTER"
+#zone="europe_west1-b"
+#ip="10.0.2.50"
+#peer_ip="10.0.2.51"
+#vrrp_password="12345"
+ip_ranges=${floating_ip_ranges}
+
+apt-get update
+apt-get -y install nginx keepalived jq
+cat <<EOF>> /bin/nginx_check.sh
+#!/bin/sh
+if [ -z "\`pidof nginx\`" ]; then
+  exit 1
+fi
+EOF
+chmod a+x /bin/nginx_check.sh
+
+echo '<HTML><BODY>This is server ${state}</BODY></HTML>' > /var/www/html/index.html
+
+# Generate string to be used for virtual_ips in the keepalived.conf file
+for range in $${ip_ranges[@]}
+do
+    virtual_ips=$(printf "    $range dev ens4\n$virtual_ips")
+done
+
+# Generate the Keepalived configuration file
+cat << EOF >> /etc/keepalived/keepalived.conf
+vrrp_script nginx {
+  script "/bin/nginx_check.sh"
+  interval 2
+  user www-data
+}
+
+vrrp_instance floating_ip {
+  state ${state}
+  interface ens4
+  track_script {
+    nginx
+  }
+  unicast_src_ip ${ip}
+  unicast_peer {
+    ${peer_ip}
+  }
+  virtual_router_id 50
+  priority ${priority}
+  authentication {
+    auth_type PASS
+    auth_pass ${vrrp_password}
+  }
+  virtual_ipaddress {
+$virtual_ips
+  }
+  notify_master "/etc/keepalived/takeover.sh"
+}
+EOF
+
+#Set some variables for generating the failover script that will be specific for the backup and the master
+if [ "${state}" = "MASTER" ]; then
+     instance_1_prefix="nginx-backup"
+     instance_2_prefix="nginx-master"
+else
+     instance_1_prefix="nginx-master"
+     instance_2_prefix="nginx-backup"
+fi
+declare -i i=1
+list_alias_ips=""
+for range in $${ip_ranges[@]}
+do
+    if [ $i -ne 1 ]; then
+        separator=';'
+    fi
+    list_alias_ips="$list_alias_ips$separator"floating-ip-$i:$range
+    ((i++))
+done
+
+sudo touch /etc/keepalived/takeover.log
+sudo chmod a+rw /etc/keepalived/takeover.log
+# The following script performs the failover
+cat << EOF >> /etc/keepalived/takeover.sh
+#!/bin/bash
+# Look for the Nginx Gateway VMs (since they are created by a MIG, they have a random suffix)
+instance_list=\$(gcloud compute instances list --filter="name~'nginx'" --format=json)
+instance_1=\$(echo \$instance_list | jq -r --arg prefix "$instance_1_prefix" '.[] | select(.name | startswith(\$prefix)) | .name')
+instance_2=\$(echo \$instance_list | jq -r --arg prefix "$instance_2_prefix" '.[] | select(.name | startswith(\$prefix)) | .name')
+# Unassign peer's IP aliases. Try it until it's possible.
+declare -i i=0
+until gcloud compute instances network-interfaces update \$instance_1 --zone ${zone} --aliases "" >> /etc/keepalived/takeover.log 2>&1; do
+    ((i++))
+    if [ \$i -eq 2 ]; then
+        echo "Can't access instance during takeover. Instance may have been deleted. Skipping..." >> /etc/keepalived/takeover.log 2>&1
+        break
+    fi
+    echo "Instance not accessible during takeover. Retrying in 5 seconds..." >> /etc/keepalived/takeover.log 2>&1
+    sleep 2
+done
+# Assign IP aliases to me because now I am the MASTER!
+gcloud compute instances network-interfaces update \$instance_2 --zone ${zone} --aliases="$list_alias_ips" >> /etc/keepalived/takeover.log 2>&1
+sudo systemctl restart nginx
+echo "I became the MASTER at: \$(date)" >> /etc/keepalived/takeover.log
+EOF
+sudo chmod a+x /etc/keepalived/takeover.sh
+sed -i.bak '/\[Service\]/ a Restart=always' /etc/systemd/system/multi-user.target.wants/keepalived.service
+service keepalived restart
