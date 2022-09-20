@@ -1,7 +1,7 @@
-# Deploying a Nginx cluster with failover and heartbeat-exposed health checks on Google Cloud Platform
+# Deploying a Nginx cluster with failover and auto-healing on Google Cloud Platform
 
 
-This document provides instructions on how to deploy the example implementation of a Nginx cluster with failover and heartbeat-exposed health checks pattern using [Terraform](https://www.terraform.io/).
+This document provides instructions on how to deploy the example implementation of a Nginx cluster with failover and auto-healing pattern using [Terraform](https://www.terraform.io/).
 This method is derived from the pattern described here: [Patterns for using floating IP addresses in Compute Engine](https://cloud.google.com/architecture/patterns-for-using-floating-ip-addresses-in-compute-engine#heartbeat-exposed)
 
 This pattern deploys two [nginx](https://nginx.org/en/) webservers utilizing a floating IP address, implemented using [Alias IP Ranges](https://cloud.google.com/vpc/docs/alias-ip) allocated to the VMs. When you request the document root (/) from the floating IP address (the IP address of the internal TCP/UDP load balancer) you receive a response that identifies the first or second web server.
