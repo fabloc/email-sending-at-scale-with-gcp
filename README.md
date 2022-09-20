@@ -165,7 +165,7 @@ To avoid incurring charges to your Google Cloud account for the resources you cr
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_floating_ip_ranges"></a> [floating\_ip](#input\_floating\_ip) | Floating IP Ranges address used by the Nginx Cluster | `string` | `["192.168.0.0/24","192.168.1.0/24"]` | no |
+| <a name="input_floating_ip_ranges"></a> [floating\_ip\_ranges](#input\_floating\_ip\_ranges) | Floating IP Ranges address used by the Nginx Cluster | `string` | `["192.168.0.0/24","192.168.1.0/24"]` | no |
 | <a name="input_health_check_port"></a> [health\_check\_port](#input\_health\_check\_port) | TCP port used for health check | `number` | `6000` | no |
 | <a name="input_primary_ip"></a> [primary\_ip](#input\_primary\_ip) | IP address of the primary VM | `string` | `"10.100.2.1"` | no |
 | <a name="input_project_id"></a> [project\_id](#input\_project\_id) | Google Cloud Project ID | `string` | n/a | yes |
