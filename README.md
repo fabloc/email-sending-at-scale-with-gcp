@@ -1,4 +1,4 @@
-# Deploying a Nginx cluster with failover and heartbeat-exposed health checks
+# Deploying a Nginx cluster with failover and heartbeat-exposed health checks on Google Cloud Platform
 
 
 This document provides instructions on how to deploy the example implementation of a Nginx cluster with failover and heartbeat-exposed health checks pattern using [Terraform](https://www.terraform.io/).
