@@ -51,12 +51,6 @@ variable "secondary_ip" {
   default     = "10.100.2.2"
 }
 
-variable "floating_ip" {
-  description = "Floating IP address used by the load balancer"
-  default     = "192.168.0.1"
-}
-
-
 variable "health_check_port" {
   description = "TCP port used for health check"
   default     = 80
