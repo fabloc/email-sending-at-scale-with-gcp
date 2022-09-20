@@ -8,7 +8,7 @@ This pattern deploys two [nginx](https://nginx.org/en/) webservers utilizing a f
 
 The following diagram shows the architecture that you deploy. It consists of two Compute Engine instances each in a separate instance group behind an internal TCP/UDP load balancer. The second instance group is set as failover backend service for the load balancer so traffic usually flows to the first instance group. Keepalived is installed on both nginx instances to decide on the primary and backup instance. The primary instance opens a socket that is checked by the health check. When the primary instance fails, keepalived closes the socket while keepalived on the second instance opens the socket. Now the health check is only answered on the secondary instance and traffic fails over to the second instance group.
 
-![Architecture for a Nginx cluster with failover and heartbeat-exposed health checks](HA with Keepalived.png)
+![Architecture for a Nginx cluster with failover and heartbeat-exposed health checks](architecture.png)
 
 ## Objectives
 Provision the following resources in Google Cloud by using a Terraform template:
