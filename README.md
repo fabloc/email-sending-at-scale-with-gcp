@@ -169,8 +169,8 @@ To avoid incurring charges to your Google Cloud account for the resources you cr
 | <a name="input_health_check_port"></a> [health\_check\_port](#input\_health\_check\_port) | TCP port used for health check | `number` | `6000` | no |
 | <a name="input_primary_ip"></a> [primary\_ip](#input\_primary\_ip) | IP address of the primary VM | `string` | `"10.100.2.1"` | no |
 | <a name="input_project_id"></a> [project\_id](#input\_project\_id) | Google Cloud Project ID | `string` | n/a | yes |
-| <a name="input_region"></a> [region](#input\_region) | Google Cloud Region used to deploy resources | `string` | `"us-central1"` | no |
+| <a name="input_region"></a> [region](#input\_region) | Google Cloud Region used to deploy resources | `string` | `"europe-west1"` | no |
 | <a name="input_secondary_ip"></a> [secondary\_ip](#input\_secondary\_ip) | IP address of the secondary VM | `string` | `"10.100.2.2"` | no |
 | <a name="input_subnet_range"></a> [subnet\_range](#input\_subnet\_range) | IP address range used for the subnet | `string` | `"10.100.0.0/16"` | no |
 | <a name="input_vrrp_password"></a> [vrrp\_password](#input\_vrrp\_password) | Password used for VRRP between instances | `any` | n/a | yes |
-| <a name="input_zone"></a> [zone](#input\_zone) | Google Cloud Zone used to deploy resources | `string` | `"us-central1-c"` | no |
+| <a name="input_zone"></a> [zone](#input\_zone) | Google Cloud Zone used to deploy resources | `string` | `"europe-west1-b"` | no |
