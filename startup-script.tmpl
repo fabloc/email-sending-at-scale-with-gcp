@@ -14,9 +14,11 @@ chmod a+x /bin/nginx_check.sh
 echo '<HTML><BODY>This is server ${state}</BODY></HTML>' > /var/www/html/index.html
 
 # Generate string to be used for virtual_ips in the keepalived.conf file
+# First retrieve the primary active interface name using the following command:
+nic_name=$(ip addr show | awk '/inet.*brd/{print $NF; exit}')
 for range in $${ip_ranges[@]}
 do
-    virtual_ips=$(printf "    $range dev ens4\n$virtual_ips")
+    virtual_ips=$(printf "    $range dev $nic_name\n$virtual_ips")
 done
 
 # Generate the Keepalived configuration file
@@ -58,20 +60,12 @@ else
      instance_1_prefix="nginx-master"
      instance_2_prefix="nginx-backup"
 fi
-declare -i i=1
-list_alias_ips=""
-for range in $${ip_ranges[@]}
-do
-    if [ $i -ne 1 ]; then
-        separator=';'
-    fi
-    list_alias_ips="$list_alias_ips$separator"floating-ip-$i:$range
-    ((i++))
-done
 
 sudo touch /etc/keepalived/takeover.log
 sudo chmod a+rw /etc/keepalived/takeover.log
+
 # The following script performs the failover
+# It requires the following IAM permissions to run correctly: compute.instances.list, compute.instances.get, compute.instances.updateNetworkInterface
 cat << EOF >> /etc/keepalived/takeover.sh
 #!/bin/bash
 # Look for the Nginx Gateway VMs (since they are created by a MIG, they have a random suffix)
@@ -90,7 +84,7 @@ until gcloud compute instances network-interfaces update \$instance_1 --zone ${z
     sleep 2
 done
 # Assign IP aliases to me because now I am the MASTER!
-gcloud compute instances network-interfaces update \$instance_2 --zone ${zone} --aliases="$list_alias_ips" >> /etc/keepalived/takeover.log 2>&1
+gcloud compute instances network-interfaces update \$instance_2 --zone ${zone} --aliases="${formatted_alias_ips}" >> /etc/keepalived/takeover.log 2>&1
 sudo systemctl restart nginx
 echo "I became the MASTER at: \$(date)" >> /etc/keepalived/takeover.log
 EOF

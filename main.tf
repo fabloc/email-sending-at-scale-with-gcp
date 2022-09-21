@@ -49,6 +49,24 @@ resource "google_compute_subnetwork" "failover_subnet" {
   network       = google_compute_network.failover_vpc.id
 }
 
+resource "google_project_iam_custom_role" "nginx_gateway_custom_role" {
+  role_id     = "nginx_gateway_role"
+  title       = "Nginx Gateway Custome Role"
+  description = "Grant Nginx Gateways the permissions to list instances and update their network interface"
+  permissions = ["compute.instances.list", "compute.instances.get", "compute.instances.updateNetworkInterface"]
+}
+
+resource "google_service_account" "nginx_gateway_sa" {
+  account_id = "nginx-gateway-sa"
+  display_name = "Nginx Gateway Service Account"
+}
+
+resource "google_project_iam_member" "nginx_binding" {
+  project = var.project_id
+  role    = "projects/${var.project_id}/roles/nginx_gateway_role"
+  member  = "serviceAccount:${google_service_account.nginx_gateway_sa.email}"
+}
+
 resource "google_compute_firewall" "failover_firewall_http" {
   name = "failover-http-traffic"
   allow {
@@ -95,11 +113,6 @@ resource "google_compute_firewall" "failover_firewall_vrrp" {
   target_tags = ["nginx-gateway"]
 }
 
-# Very bad practice to use the default Compute service account. Best practice is to define a service account with
-# exactly the right amount of permissions to perform its job
-data "google_compute_default_service_account" "default" {
-}
-
 resource "google_compute_instance_template" "nginx_primary_instance_template" {
   name_prefix  = "nginx-primary-"
   machine_type = local.machine_type
@@ -109,21 +122,22 @@ resource "google_compute_instance_template" "nginx_primary_instance_template" {
     boot         = true
   }
   metadata_startup_script = templatefile("startup-script.tmpl", {
-    server_number      = 1
-    health_check_port  = var.health_check_port
-    floating_ip_ranges = "(\"${join("\" \"", var.floating_ip_ranges)}\")"
-    ip                 = var.primary_ip
-    peer_ip            = var.secondary_ip
-    state              = "MASTER"
-    priority           = 100
-    vrrp_password      = var.vrrp_password
-    zone               = var.zone
+    server_number       = 1
+    health_check_port   = var.health_check_port
+    floating_ip_ranges  = "(\"${join("\" \"", var.floating_ip_ranges)}\")"
+    formatted_alias_ips = join(";", [for range in google_compute_subnetwork.failover_subnet.secondary_ip_range : "${range.range_name}:${range.ip_cidr_range}"])
+    ip                  = var.primary_ip
+    peer_ip             = var.secondary_ip
+    state               = "MASTER"
+    priority            = 100
+    vrrp_password       = var.vrrp_password
+    zone                = var.zone
   })
   tags = ["nginx-gateway"]
   
   service_account {
     # Google recommends custom service accounts that have cloud-platform scope and permissions granted via IAM Roles.
-    email  = data.google_compute_default_service_account.default.email
+    email  = google_service_account.nginx_gateway_sa.email
     scopes = ["cloud-platform"]
   }
 
@@ -146,21 +160,22 @@ resource "google_compute_instance_template" "nginx_secondary_instance_template" 
     boot         = true
   }
   metadata_startup_script = templatefile("startup-script.tmpl", {
-    server_number      = 2
-    health_check_port  = var.health_check_port
-    floating_ip_ranges = "(\"${join("\" \"", var.floating_ip_ranges)}\")"
-    ip                 = var.secondary_ip
-    peer_ip            = var.primary_ip
-    state              = "BACKUP"
-    priority           = 100
-    vrrp_password      = var.vrrp_password
-    zone               = var.zone
+    server_number       = 2
+    health_check_port   = var.health_check_port
+    floating_ip_ranges  = "(\"${join("\" \"", var.floating_ip_ranges)}\")"
+    formatted_alias_ips = join(";", [for range in google_compute_subnetwork.failover_subnet.secondary_ip_range : "${range.range_name}:${range.ip_cidr_range}"])
+    ip                  = var.secondary_ip
+    peer_ip             = var.primary_ip
+    state               = "BACKUP"
+    priority            = 100
+    vrrp_password       = var.vrrp_password
+    zone                = var.zone
   })
   tags = ["nginx-gateway"]
   
   service_account {
     # Google recommends custom service accounts that have cloud-platform scope and permissions granted via IAM Roles.
-    email  = data.google_compute_default_service_account.default.email
+    email  = google_service_account.nginx_gateway_sa.email
     scopes = ["cloud-platform"]
   }
   

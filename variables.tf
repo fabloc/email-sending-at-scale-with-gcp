@@ -38,7 +38,6 @@ variable "subnet_range" {
 variable "floating_ip_ranges" {
   description = "Alias IP Ranges that will be used by clients to access the Nginx Gateway"
   type        = list
-  default     = ["192.168.0.0/24","192.168.1.0/24"]
 }
 
 variable "primary_ip" {
