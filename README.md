@@ -4,7 +4,9 @@
 This document provides instructions on how to deploy the example implementation of a Nginx cluster with failover and auto-healing pattern using [Terraform](https://www.terraform.io/).
 This method is derived from the pattern described here: [Patterns for using floating IP addresses in Compute Engine](https://cloud.google.com/architecture/patterns-for-using-floating-ip-addresses-in-compute-engine#heartbeat-exposed)
 
-This pattern deploys two [nginx](https://nginx.org/en/) webservers utilizing a floating IP address, implemented using [Alias IP Ranges](https://cloud.google.com/vpc/docs/alias-ip) allocated to the VMs. When you request the document root (/) from the floating IP address (the IP address of the internal TCP/UDP load balancer) you receive a response that identifies the first or second web server.
+This pattern deploys two [nginx](https://nginx.org/en/) webservers utilizing floating IP address ranges, implemented using [Alias IP Ranges](https://cloud.google.com/vpc/docs/alias-ip) allocated to the VMs. When you request the document root (/) from an IP belonging to one of the floating IP address ranges you receive a response that identifies the first or second web server.
+
+**This design can support from 1 floating IP address to potentially millions of floating IP addresses (the limit of number of Alias IP Ranges allocated to a single Network Interface is 100).**
 
 The following diagram shows the architecture that you deploy. It consists of two Compute Engine instances each in a separate instance group behind an internal TCP/UDP load balancer. The second instance group is set as failover backend service for the load balancer so traffic usually flows to the first instance group. Keepalived is installed on both nginx instances to decide on the primary and backup instance. The primary instance opens a socket that is checked by the health check. When the primary instance fails, keepalived closes the socket while keepalived on the second instance opens the socket. Now the health check is only answered on the secondary instance and traffic fails over to the second instance group.
 
@@ -72,8 +74,8 @@ You can see the variables of this example in the `variables.tf` file or in the [
 
    Example:
    ```
-   region = "europe-west4"
-   zone = "europe-west4-c"
+   region = "europe-west1"
+   zone = "europe-west1-b"
    project_id = "my_project"
    vrrp_password = "mysecretpassword"
    ```
@@ -128,18 +130,18 @@ You have now deployed the example implementation for the load balancing with fai
    ```
    curl 10.100.3.1
    ```
-   If you changed the `floating_ip` variable in your Terraform variables file, replace `10.100.3.1` with the floating IP address you have chosen.
+   If you changed the `floating_ip_ranges` variable in your Terraform variables file, replace `10.100.3.1` with a floating IP address belonging to a floating IP range you have chosen.
 
-   You should see `This is server 1` as the primary instance serves all requests.
+   You should see `This is MASTER` or `This BACKUP` as the instance serving all requests (it can happen that the BACKUP instance gets initialized first during the terraform deployment, hence being promoted to MASTER)
 1. If you run the `curl` command repeatedly you can see that requests all requests are served by the primary instance.
 
 Optionally, to test a failure case:
-1. In the list of virtual machine instances, click *SSH* in the row of the instance with a name starting with `nginx-primary`.
-1. On the `nginx-primary` VM, stop the `nginx` service by running:
+1. In the list of virtual machine instances, click *SSH* in the row of the instance with a name starting with `nginx-master`.
+1. On the `nginx-master` VM, stop the `nginx` service by running:
    ```
    sudo service nginx stop
    ```
-1. After a few seconds, run the `curl` command from above repeatedly on the `client` instance and all requests should return `This is server 2`. The failover backend service is now active.
+1. After a few seconds, run the `curl` command from above repeatedly on the `client` instance and all requests should return `This is BACKUP`. The failover backend service is now active.
 
 ## Adding, changing or removing resources
 To add, change, or remove resources, edit the Terraform configuration, and then run the commands `terraform validate`, `terraform plan`, and `terraform apply`, in that order.
