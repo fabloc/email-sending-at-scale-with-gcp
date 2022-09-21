@@ -31,7 +31,7 @@ vrrp_script nginx {
 
 vrrp_instance floating_ip {
   state ${state}
-  interface ens4
+  interface $nic_name
   track_script {
     nginx
   }
