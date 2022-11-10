@@ -1,4 +1,4 @@
-# Deploying a Nginx cluster with failover and auto-healing on Google Cloud Platform
+# Deploying an infrastructure to support sending email at scale with redundancy
 
 
 This document provides instructions on how to deploy the example implementation of an emailing sending cluster based on Protocol Forwarding Rules and Bring Your Own IPs using [Terraform](https://www.terraform.io/).
@@ -6,7 +6,7 @@ This implementation is described in more detailed in [this page](TODO)
 
 This pattern is based on [Protocol Forwarding Rules](https://cloud.google.com/load-balancing/docs/protocol-forwarding)  
 
-**This design can support from 1 to 400 Public IP addresses. Pricing is linear with the number of Public IP addresses and above this limit, it will be more costly than the design described [here](TODO)**
+**This design can support from 1 to 500 Public IP addresses. Pricing is linear with the number of Public IP addresses and above this limit, it will be more costly than the design described [here](https://github.com/fabloc/email-sending-at-scale-with-gcp)**
 
 The following diagram shows the architecture that you deploy. It consists of a Target Pool containing a specified number of instances (default is 2) with Nginx deployed that will act as a relay for requests coming from an MTA (not part of the deployment). Traffic coming in and from the Target Pool instances is routed to a number of public IP addresses using Protocol Forwarding Rules. The public IP addresses can be Dedicated Public IP Addresses assigned by GCP or Bring Your Own IP Addresses (IP type is selected using a boolean flag).
 Protocol Forwarding Rules are used to work around a GCP limitations that prevents multiple public IP addresses to be bound to a single VM.
@@ -34,6 +34,7 @@ This tutorial uses billable components of Google Cloud:
 * Instances: [Compute Engine](https://cloud.google.com/compute/all-pricing)
 * VM-to-VM traffic is charged when using the public IP address (even though it does not leave the datacenter): [Virtual Private Cloud](https://cloud.google.com/vpc/network-pricing#vpc-pricing)
 * Protocol Forwarding Rules are charged per unit: [Cloud Load-Balancing](https://cloud.google.com/vpc/network-pricing#lb)
+* Internet Egress Traffic: All outgoing traffic from our datacenter is billed to the customer as described here: [Virtual Private Cloud](https://cloud.google.com/vpc/network-pricing#vpc-pricing). Internet traffic can be [Standard Tier](https://cloud.google.com/network-tiers/docs/overview#standard_tier) or [Premium Tier](https://cloud.google.com/network-tiers/docs/overview#premium_tier)
 * Cloud NAT: [Cloud Nat](https://cloud.google.com/vpc/network-pricing#nat-pricing)
 
 To generate a cost estimate based on your projected usage, use the [pricing calculator](https://cloud.google.com/products/calculator).
@@ -200,6 +201,6 @@ To avoid incurring charges to your Google Cloud account for the resources you cr
 | <a name="input_zone"></a> [zone](#input\_zone) | Google Cloud Zone used to deploy resources | `string` | `"europe-west1-b"` | no |
 | <a name="input_subnet_range"></a> [subnet\_range](#input\_subnet\_range) | IP address range used for the subnet | `string` | `"10.100.0.0/16"` | no |
 | <a name="nginx_instances_number"></a> [instance\_numbers](#input\_instance_numbers) | Number of Instances to create in the Target Pool - use at least 2 for redundancy | `number` | `2` | no |
-| <a name="use_byoip"></a> [use\_byoip](#input\_use\_byoip) | Boolean indicating whether to use BYOIP or dedicated public IPs | `boolean` | N/A | yes |
+| <a name="use_byoip"></a> [use\_byoip](#input\_use\_byoip) | Boolean indicating whether to use BYOIP or dedicated public IPs | `boolean` | n/a | yes |
 | <a name="dedicated_ip_number"></a> [ip\_number](#input\_ip\_number) | If not using BYOIP (`use_byoip` set to `false`), number of dedicated public IPs to create | `number` | `5` | no |
 | <a name="input_health_check_port"></a> [health\_check\_port](#input\_health\_check\_port) | TCP port used for health check | `number` | `6000` | no |
