@@ -1,0 +1,8 @@
+#!/bin/bash
+
+apt-get update
+apt-get -y install nginx
+
+echo '<HTML><BODY>This is server ha-pf-nginx-${instance_number}</BODY></HTML>' > /var/www/html/index.html
+
+sudo systemctl restart nginx
