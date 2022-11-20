@@ -27,17 +27,17 @@ Examples of formatting features are the following (extracted from the [Prevent m
 - If your messages are in HTML, format them according to HTML standards.
 - Don’t use HTML and CSS to hide content in your messages.
 - Message From: headers should include only one email address, as shown in this example:
-    From: notifications@solarmora.com 
+	From: notifications@solarmora.com 
 - Include a valid Message-ID header field in every message (RFC 5322).
 - Links in the body messages should be visible and easy to understand. Recipients should know where they go when they click links.
 - Sender information should be clear and visible.
 - Message subjects should be relevant and not misleading.
 - Format international domains according to the Highly Restrictive guidelines in section 5.2 of Unicode Technical Standard #39:
-    Authenticating domain
-    Envelope from domain
-    Payload domain
-    Reply-to domain
-    Sender domain
+	Authenticating domain
+	Envelope from domain
+	Payload domain
+	Reply-to domain
+	Sender domain
 
 # Reputation Features
 
