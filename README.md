@@ -1,4 +1,4 @@
-** DISCLAIMER: This page is work in progress**
+**DISCLAIMER: This page is work in progress**
 
 
 # Overview of the constraints for sending emails at scale
@@ -27,17 +27,17 @@ Examples of formatting features are the following (extracted from the [Prevent m
 - If your messages are in HTML, format them according to HTML standards.
 - Don’t use HTML and CSS to hide content in your messages.
 - Message From: headers should include only one email address, as shown in this example:
-  From: notifications@solarmora.com 
+    From: notifications@solarmora.com 
 - Include a valid Message-ID header field in every message (RFC 5322).
 - Links in the body messages should be visible and easy to understand. Recipients should know where they go when they click links.
 - Sender information should be clear and visible.
 - Message subjects should be relevant and not misleading.
 - Format international domains according to the Highly Restrictive guidelines in section 5.2 of Unicode Technical Standard #39:
-  Authenticating domain
-  Envelope from domain
-  Payload domain
-  Reply-to domain
-  Sender domain
+    Authenticating domain
+    Envelope from domain
+    Payload domain
+    Reply-to domain
+    Sender domain
 
 # Reputation Features
 
@@ -73,6 +73,8 @@ ISPs generally use a combination of multiple factors which can consist (and not 
 - **In-house IP evaluation** based of previous email history received **by this ISP** sent from this IP and recipients evaluations (whether the email was opened, marked as spam, etc.). An IP that has an history of high spam ratio will be more likely to be bounced by an ISP.
 - **[DNSBL](https://en.wikipedia.org/wiki/Domain_Name_System-based_blocklist)** mechanism which consists of curated lists of domains flagged as apt to send spams. Each DNSBL list has its own sets of criteria to identify spams and some are more restrictive/aggressive than others. Furthermore, other mechansisms like URI DNSBL can even further check for blacklisted clickable URIs inside the body of the email. DNSBL typical work as a reverse DNS resolution taking into input the sending IP address. If the resolution is successful, it means the IP is blocklisted.
 
+With IP reputation, variables like whether you’re using a brand new IP address, a shared IP, or a dedicated IP can have a big impact.
+
 IP reputation is the most energy-consuming part of the deliverability and requires on-going monitoring. Same as for domains, tools exist to check the reputation of an IP **TODO Provide tools examples**.
 
 Customers considering sending emails at scale have multiple options at hand:
@@ -80,7 +82,6 @@ Customers considering sending emails at scale have multiple options at hand:
 - Or they purchase dedicated IPs, which is much more expensive, but gives the customer more control over the IP reputation as they are solely responsible for it
 
 Now, when it comes to Cloud Providers, dedicated IP can by used, but the issue is that public IP addresses that are assigned have an "history" that the customer can't control. More specifically the IP addresses may have a bad reputation score from the ISPs.
-
 
 In order to work this around, it is recommanded to acquire IP ranges that will be used exclusively for this purpose and that the email sending company will be able to control. It will be able to spread their use of their IPs for example by either using dedicated IP addresses for premium customers or shared IPs for entrey-level customers.
 
@@ -90,7 +91,7 @@ Using authentication mechanisms like SPF or DKIM, the Domain is linked to IPs us
 Changing the low reputation IPs with high-reputation IPs to send emails with a given domain is a good way to improve the deliverability of the emails and reduce reputation damage done on a Domain caused by a bad IP.
 Be aware that Domain reputation is much more difficult to correct than an IP, since you just need to change the IP for sending emails!
 
-Given that an IP can be shared and used to send emails from many domains, the domain reputation is more specific than the IP reputation
+Given that an IP can be shared and used to send emails from many domains, the domain reputation is pointed than IP reputation. With that in mind, Domain reputation has probably more weight than IP reputation for ISPs (more specifically for Gmail).
 
 
 # Typical Email sending Stack
