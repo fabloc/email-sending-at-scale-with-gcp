@@ -78,12 +78,15 @@ ISPs generally use a combination of multiple factors which can consist (and not 
 With IP reputation, variables like whether you’re using a brand new IP address, a shared IP, or a dedicated IP can have a big impact.
 
 **Shared IP address**
+
 Indeed, it's possible to use a single IP address to send emails for many different domains. This is an economic solution (IP address ranges are expensive!), but it may dangerous if your neighbors on the same IP have the bad habit to send junk emails as it will negatively impact the IP reputation, and thus the deliverability of emails for all domains on the same IP.
 
 **Re-purposed IP address**
+
 On the other hand, when using a new IP allocated by a cloud or hosting provider, the IP has an history and its reputation may be low if previous users used IP to send spam. So care must be taken with these kind of IPs as they could have a low reputation or even be blocklisted in one or more of the DNSBL or ISPs, leading to lots of efforts to remove the IP from the various lists. Given this, it may not be the most effective solution for large emailers.
 
 **Owned IP address**
+
 The last option is to purchase IP ranges to send emails. It is the most expensive option as IP become more and more expensive as they are getting scarser with time, but it gives more control over the IP reputation. This way a dedicated IP can be used for only one domain, limiting the impact of 'noisy' neighbors. However, when first using a new IP, its reputation will be blank. Given that the reputation mechanism works by comparing the ratio of spam sent versus the total number of emails, a specific step should be done, called 'IP warm up', described below.
 
 ### IP Warm-Up
@@ -97,7 +100,9 @@ After this warm-up period, the IP can be used in production.
 
 ### IP Reputation Tools
 
-Same as for domains, tools exist to check the reputation of an IP **TODO Provide tools examples**.
+Same as for domains, tools exist to check the reputation of an IP
+
+**TODO Provide tools examples**.
 
 
 ## Domain vs IP Reputation
